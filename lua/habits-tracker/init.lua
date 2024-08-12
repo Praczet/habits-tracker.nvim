@@ -8,6 +8,7 @@ M.journal = require("habits-tracker.journal")
 -- Any initialization code
 M.setup = function(opts)
 	-- Set up each module with user-provided options or defaults
+	opts = opts or {}
 	M.charting.setup(opts.charting or {})
 	M.calendar.setup(opts.calendar or {})
 	M.journal.setup(opts.journal or {})
