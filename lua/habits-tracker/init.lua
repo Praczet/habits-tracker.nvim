@@ -16,6 +16,8 @@ end
 
 function M.test()
 	vim.notify("Test triggered")
+	M.charting.test()
+	M.calendar.test()
 end
 
 return M
