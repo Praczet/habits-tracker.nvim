@@ -3,6 +3,7 @@ local M = {}
 M.config = {
 	journals = "~/Notes/Journal/daily",
 	day_format = "%Y-%m-%d.md",
+	tmpl_daily = "~/Notes/templates/Daily.md",
 	habits = {
 		{
 			label = "French",
@@ -63,6 +64,26 @@ M.calendar = require("habits-tracker.calendar")
 M.journal = require("habits-tracker.journal")
 M.utils = require("habits-tracker.utils")
 
+local function parse_params_journal(args)
+	local date = os.date("%Y-%m-%d") -- Default to the current date
+	local replacements = {}
+	if not args then
+		return date, replacements
+	end
+
+	for _, arg in ipairs(args) do
+		local key, value = arg:match("^(%w+)=([%w%p]+)$")
+		if arg:match("^%d%d%d%d%-%d%d%-%d%d$") then
+			date = arg -- If a valid date is found, use it
+		elseif key and value then
+			replacements[key:lower()] = value
+		else
+			vim.notify("Invalid argument: " .. arg, vim.log.levels.ERROR)
+		end
+	end
+
+	return date, replacements
+end
 local function parse_params_date(date)
 	local start_date, end_date
 	if date == "week" then
@@ -188,6 +209,11 @@ local function bar_command(args, bar_type)
 	local data = M.journal.test(start_date, end_date, params.value)
 	M.charting.render_bar(start_date, end_date, data, params.value, params.title, bar_type)
 end
+-- Command implementation
+local function journal_command(opts)
+	local date, replacements = parse_params_journal(opts)
+	M.journal.create_journal(date, replacements)
+end
 
 local function add_user_command()
 	vim.api.nvim_create_user_command("Habits", function(opts)
@@ -202,6 +228,10 @@ local function add_user_command()
 
 	vim.api.nvim_create_user_command("Track", function(opts)
 		bar_command(opts.fargs, "vertical")
+	end, { nargs = "*" })
+
+	vim.api.nvim_create_user_command("Journal", function(opts)
+		journal_command(opts.fargs)
 	end, { nargs = "*" })
 
 	vim.api.nvim_create_user_command("TrackBarHorizontal", function(opts)
