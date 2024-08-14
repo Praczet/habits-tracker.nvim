@@ -1,33 +1,6 @@
 -- Placeholder for habits.lua
 local M = {}
-M.config = {
-	padding = { 1, 1 },
-	gird = {
-		enable = true,
-		borders = {
-			hor = "┈",
-			ver = "┊",
-			left_down = "└",
-			right_down = "┘",
-			left_up = "┌",
-			right_up = "┐",
-			left_cross = "├",
-			right_cross = "┤",
-			cross = "┼",
-			top_cross = "┬",
-			down_cross = "┴",
-			xs_hor = "═",
-			xs_left_cross = "╞",
-			xs_right_cross = "╡",
-			xs_cross = "╪",
-		},
-		enable_vertical_lines = true,
-		enable_horizontal_lines = true,
-	},
-	days_label = true,
-	title = "Habits Tracker",
-	title_format = "",
-}
+M.config = {}
 M.utils = require("habits-tracker.utils")
 local min_cell_width = 1
 local x_label = ""
@@ -254,7 +227,6 @@ function M.get_lines(series, date_range)
 	local data = {}
 	local grid_active = is_grid_active()
 	date_range = date_range or get_date_range(series)
-	-- print(vim.inspect(date_range))
 	if not series then
 		return lines
 	end
@@ -288,7 +260,7 @@ function M.get_lines(series, date_range)
 	return lines
 end
 
-function M.add_habit_to_buffer(lines)
+function M.add_habits_to_buffer(lines)
 	local row, _ = unpack(vim.api.nvim_win_get_cursor(0))
 	if M.utils.is_cursor_between_fences() then
 		vim.api.nvim_buf_set_lines(0, row, row, true, lines)
@@ -299,8 +271,8 @@ function M.add_habit_to_buffer(lines)
 	end
 end
 
-function M.setup(opts)
-	M.config = vim.tbl_deep_extend("force", M.config, opts)
+function M.setup(config)
+	M.config = vim.tbl_deep_extend("force", M.config, config)
 	M.config.padding = M.config.padding or { 0, 0 }
 	M.config.gird = M.config.gird or { enable = false }
 end

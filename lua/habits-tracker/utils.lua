@@ -2,6 +2,7 @@ local M = {}
 M.config = {
 	first_dow = "su", -- Default first day of the week is Monday
 }
+M.debug = true
 local day_map = {
 	su = 0, -- Sunday
 	mo = 1, -- Monday
@@ -38,26 +39,60 @@ function M.get_current_week()
 
 	return min_day, max_day
 end
+function M.log_message(module_name, message)
+	if not M.debug then
+		return
+	end
+	local log_file = vim.fn.expand("~/.config/nvim/nvim-markdown-links.log")
+	local log_entry = os.date("%Y-%m-%d %H:%M:%S") .. "\t" .. module_name .. "\t" .. message .. "\n"
+	local file = io.open(log_file, "a")
+	if file then
+		file:write(log_entry)
+		file:close()
+	end
+end
+
+function M.read_file(file_path)
+	local file = io.open(file_path, "r")
+	if not file then
+		return nil
+	end
+	local content = file:read("*all")
+	file:close()
+	return content
+end
 
 function M.generate_dates_in_range(start_date, end_date)
 	local dates = {}
-	local current_date = os.time({
-		year = start_date:sub(1, 4),
-		month = start_date:sub(6, 7),
-		day = start_date:sub(9, 10),
-	})
-	local end_date_time = os.time({
-		year = end_date:sub(1, 4),
-		month = end_date:sub(6, 7),
-		day = end_date:sub(9, 10),
-	})
-
+	local current_date = M.get_os_time(start_date)
+	local end_date_time = M.get_os_time(end_date)
 	while current_date <= end_date_time do
 		table.insert(dates, os.date("%Y-%m-%d", current_date))
 		current_date = current_date + 86400 -- add one day in seconds
 	end
 
 	return dates
+end
+
+function M.get_os_time(date)
+	if not date then
+		return nil
+	end
+	return os.time({
+		year = string.sub(date, 1, 4),
+		month = string.sub(date, 6, 7),
+		day = string.sub(date, 9, 10),
+	})
+end
+
+function M.file_exists(path)
+	local file = io.open(path, "r")
+	if file then
+		file:close()
+		return true
+	else
+		return false
+	end
 end
 
 function M.utf8len(str)
@@ -79,10 +114,6 @@ function M.align_right(text, max_length)
 end
 
 function M.align_left(text, max_length)
-	print(
-		"text: " .. text,
-		", max_length: " .. max_length .. ", #text: " .. #text .. ", utf8len(text): " .. M.utf8len(text)
-	)
 	local text_length = M.utf8len(text)
 	if text_length < max_length then
 		return text .. string.rep(" ", max_length - text_length)
@@ -127,4 +158,7 @@ function M.is_cursor_between_fences()
 	return false
 end
 
+function M.normalize_folder_path(folder_path)
+	return folder_path:gsub("/$", "")
+end
 return M

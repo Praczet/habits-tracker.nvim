@@ -33,8 +33,12 @@ local function interpolate_approx(data, max_rows, max_height_value, x_min, x_max
 	max_height_value = math.max(0, math.min(max_height_value, 1))
 
 	-- Find the actual min and max dates in the data
-	local actual_min_x = data[1].x
-	local actual_max_x = data[#data].x
+	local actual_min_x = tostring(os.date("%Y-%m-%d"))
+	local actual_max_x = tostring(os.date("%Y-%m-%d"))
+	if #data > 0 then
+		actual_min_x = data[1].x
+		actual_max_x = data[#data].x
+	end
 
 	-- Use provided x_min and x_max if available, otherwise default to actual data range
 	local x_min_time = x_min
@@ -131,7 +135,7 @@ local function interpolate_approx(data, max_rows, max_height_value, x_min, x_max
 				end
 			end
 
-			if not found and data[#data].x == date_str then
+			if not found and #data > 0 and data[#data].x == date_str then
 				table.insert(filled_data, data[#data])
 			end
 		end
@@ -255,7 +259,6 @@ function M.vertical_get_lines(bars, max_rows, show_legend, max_height_value, tit
 	if M.config and M.config.show_oxy then
 		table.insert(lines, string.rep(hor, label_len) .. cross .. string.rep(hor, #bars * x_label_value_len))
 	end
-	-- Print the x-axis labels
 	local labels = M.utils.align_right(x_label, label_len) .. ver -- Space for the legend area
 	for _, bar in ipairs(bars) do
 		labels = labels .. M.utils.align_center(get_x_value_label(bar.x), x_label_value_len) -- Extract the day portion of the date
@@ -352,11 +355,24 @@ function M.horizontal(chart_data)
 	M.add_lines_to_buffer(lines)
 end
 
+function M.get_chart_data(start_date, end_date, data, y_label, title)
+	return {
+		y_label = y_label,
+		x_label = "",
+		max_rows = 10,
+		add_aprox = true,
+		x_min = start_date,
+		x_max = end_date,
+		max_height_value = 0.8,
+		title = string.format((title or y_label .. ": %s - %s"), start_date, end_date),
+		data = data,
+	}
+end
+
 function M.setup(opts)
-	M.config = vim.tbl_deep_extend("force", M.config, opts.charting or {})
+	M.config = vim.tbl_deep_extend("force", M.config, opts or {})
 	setup_ox()
 	x_label_value_len = 2 * padding + 1
-	print(M.utils.get_current_week())
 end
 
 return M

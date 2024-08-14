@@ -1,13 +1,12 @@
 local M = {}
-
+M.config = {}
 M.habits = require("habits-tracker.calendar.habits")
-M.barchart = require("habits-tracker.charting.bar")
 M.utils = require("habits-tracker.utils")
 
 M.setup = function(opts)
 	if opts then
+		M.config = vim.tbl_deep_extend("force", M.config, opts)
 		M.habits.setup(opts)
-		M.barchart.setup(opts)
 	end
 end
 
@@ -32,7 +31,12 @@ function M.test()
 			symbol = "●",
 		},
 	}, { min = "2024-08-01", max = "2024-08-10" })
-	M.habits.add_habit_to_buffer(lines)
+	M.habits.add_habits_to_buffer(lines)
+end
+
+function M.render_habits(habits, start_date, end_date)
+	local lines = M.habits.get_lines(habits, { min = start_date, max = end_date })
+	M.habits.add_habits_to_buffer(lines)
 end
 
 return M

@@ -1,31 +1,51 @@
 -- Placeholder for init.lua
 local M = {}
-
+M.config = {
+	line = {},
+	bar = {},
+}
 M.line = require("habits-tracker.charting.line")
 M.bar = require("habits-tracker.charting.bar")
 
 M.setup = function(opts)
+	M.config = vim.tbl_deep_extend("force", M.config, opts or {})
+	M.line.setup(M.config.line)
+	M.bar.setup(M.config.bar)
 	-- Configuration for the charting module
 end
 
-function M.test()
-	--- Testing barchar
-	local chart_data = {
-		y_label = "Weight",
-		x_label = "",
-		max_rows = 10,
-		add_aprox = true,
-		x_min = "2024-08-01",
-		x_max = "2024-08-07",
-		max_height_value = 0.8,
-		title = "Weight (kg) 2024-08-01 - 2024-08-07",
-		data = {
-			{ type = "exact", value = 120, x = "2024-08-04" },
-			{ type = "exact", value = 100, x = "2024-08-01" },
-			-- { type = "aprox", value = 110, x = "2024-08-02" }, -- example, this would be interpolated if missing
-		},
-	}
+function M.render_bar_vertical(start_date, end_date, data, y_label, title)
+	local chart_data = M.bar.get_chart_data(start_date, end_date, data, y_label, title)
 	M.bar.vertical(chart_data)
+end
+
+function M.render_bar_horizontal(start_date, end_date, data, y_label, title)
+	local chart_data = M.bar.get_chart_data(start_date, end_date, data, y_label, title)
 	M.bar.horizontal(chart_data)
+end
+
+function M.render_bar(start_date, end_date, data, y_label, title, bar_type)
+	if bar_type == "vertical" then
+		M.render_bar_vertical(start_date, end_date, data, y_label, title)
+	elseif bar_type == "horizontal" then
+		M.render_bar_horizontal(start_date, end_date, data, y_label, title)
+	end
+end
+
+function M.test(start_date, end_date, data, y_label, title)
+	--- Testing barchar
+	-- local chart_data = {
+	-- 	y_label = "Weight",
+	-- 	x_label = "",
+	-- 	max_rows = 10,
+	-- 	add_aprox = true,
+	-- 	x_min = start_date,
+	-- 	x_max = end_date,
+	-- 	max_height_value = 0.8,
+	-- 	title = string.format("Weight (kg) %s - %s", start_date, end_date),
+	-- 	data = data,
+	-- }
+	M.render_bar_vertical(start_date, end_date, data, y_label, title)
+	M.render_bar_horizontal(start_date, end_date, data, y_label, title)
 end
 return M
