@@ -9,6 +9,10 @@
 - **Journal Management**: Create and manage daily journal entries, complete with templating support.
 - **Custom Commands**: Use custom Neovim commands to interact with your habits and journal.
 
+## Examples
+
+![Example of usage](assets/habits-tracker.png)
+
 ## Installation
 
 You can install `habits-tracker.nvim` using your preferred Neovim plugin manager.
