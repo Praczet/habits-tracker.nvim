@@ -15,6 +15,11 @@ M.config = {
 			style = { fg = "red" },
 			symbol = "◆",
 		},
+		{
+			label = "Sport",
+			style = { fg = "red" },
+			symbol = "▼",
+		},
 	},
 	charting = {
 		line = {},
