@@ -8,7 +8,7 @@ M.utils = require("habits-tracker.utils")
 
 local function get_journal_path(date)
 	local file_name = os.date(M.config.day_format, M.utils.get_os_time(date))
-	return M.config.journals .. "/" .. file_name
+	return vim.fn.expand(M.config.journals .. "/" .. file_name)
 end
 local function load_template()
 	return M.utils.read_file(vim.fn.expand(M.config.tmpl_daily))
