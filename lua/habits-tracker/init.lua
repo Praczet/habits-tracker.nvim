@@ -212,7 +212,7 @@ local function bar_command(args, bar_type)
 	if not params.tilte or params.tilte == "" then
 		params.tilte = params.value .. ": %s - %s"
 	end
-	local data = M.journal.test(start_date, end_date, params.value)
+	local data = M.journal.get_values(start_date, end_date, params.value)
 	M.charting.render_bar(start_date, end_date, data, params.value, params.title, bar_type)
 end
 -- Command implementation
@@ -248,8 +248,35 @@ local function add_user_command()
 		bar_command(opts.fargs, "vertical")
 	end, { nargs = "*" })
 end
+
+---Gets lines for bar chart
+---@param value_name string Value to read from YAML fronter
+---@param bar_type string Horizontal or Vertical
+---@param title string Chart title (optional)
+---@param start_date string|osdate Start Date (optional) in format YYYY-MM-DD
+---@param end_date string|osdate End Date (optional) in format YYYY-MM-DD
+---@return table string[] Lines to be rendered
+function M.get_bar_lines(value_name, bar_type, title, start_date, end_date)
+	local lines = {}
+	if not value_name or value_name == "" then
+		vim.notify("Parameters values is empty", vim.log.levels.WARN)
+		return {}
+	end
+	if not bar_type or bar_type == "" then
+		bar_type = "vertical"
+	end
+	if start_date == nil then
+		start_date, end_date = M.utils.get_current_week()
+	end
+	if title == nil or title == "" then
+		title = value_name .. ": %s - %s"
+	end
+	local data = M.journal.get_values(start_date, end_date, value_name)
+	lines = M.charting.get_bar_lines(start_date, end_date, data, value_name, title, bar_type)
+	return lines
+end
 -- Any initialization code
-M.setup = function(opts)
+function M.setup(opts)
 	-- Set up each module with user-provided options or defaults
 	opts = opts or {}
 	M.config = vim.tbl_deep_extend("force", M.config, opts)

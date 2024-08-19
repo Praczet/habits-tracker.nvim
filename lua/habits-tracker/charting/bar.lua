@@ -316,7 +316,11 @@ function M.add_lines_to_buffer(lines)
 		vim.api.nvim_buf_set_lines(0, row, row, true, lines)
 	end
 end
-function M.vertical(chart_data)
+function M.vertical(chart_data, add_to_buffer)
+	-- checking if it should be added to buffer
+	if add_to_buffer == nil then
+		add_to_buffer = true
+	end
 	-- sorting data by x (day)
 	table.sort(chart_data.data, function(a, b)
 		return a.x < b.x
@@ -335,10 +339,18 @@ function M.vertical(chart_data)
 		chart_data.max_height_value,
 		chart_data.title
 	)
-	M.add_lines_to_buffer(lines)
+	if add_to_buffer then
+		M.add_lines_to_buffer(lines)
+	else
+		return lines
+	end
 end
 
-function M.horizontal(chart_data)
+function M.horizontal(chart_data, add_to_buffer)
+	-- checking if it should be added to buffer
+	if add_to_buffer == nil then
+		add_to_buffer = true
+	end
 	-- sorting data by x (day)
 	table.sort(chart_data.data, function(a, b)
 		return a.x < b.x
@@ -352,7 +364,11 @@ function M.horizontal(chart_data)
 	)
 	local lines = {}
 	lines = M.horizontal_get_lines(bars, chart_data.max_rows, M.config.show_legend, chart_data.title)
-	M.add_lines_to_buffer(lines)
+	if add_to_buffer then
+		M.add_lines_to_buffer(lines)
+	else
+		return lines
+	end
 end
 
 function M.get_chart_data(start_date, end_date, data, y_label, title)

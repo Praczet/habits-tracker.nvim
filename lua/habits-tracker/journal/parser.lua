@@ -181,6 +181,12 @@ function M.get_habits(start_date, end_date, habits)
 	return ha
 end
 
+function M.get_values(start_date, end_date, value_name)
+	local files = get_days_files(start_date, end_date)
+	local values = get_value_form_files(files, value_name)
+	return values
+end
+
 function M.test(start_date, end_date, value_name)
 	local files = get_days_files(start_date, end_date)
 	local values = get_value_form_files(files, value_name)

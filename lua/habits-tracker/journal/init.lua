@@ -67,6 +67,10 @@ function M.get_habits(start_date, end_date, habits)
 	return M.parser.get_habits(start_date, end_date, habits)
 end
 
+function M.get_values(min, max, value_name)
+	return M.parser.get_values(min, max, value_name)
+end
+
 function M.test(min, max, value)
 	return M.parser.test(min, max, value)
 end
