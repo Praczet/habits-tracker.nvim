@@ -161,4 +161,9 @@ end
 function M.normalize_folder_path(folder_path)
 	return folder_path:gsub("/$", "")
 end
+
+function M.setup(config)
+	M.config = vim.tbl_deep_extend("force", M.config, config or {})
+	M.debug = M.config.debug
+end
 return M

@@ -4,6 +4,7 @@ M.config = {
 	journals = "~/Notes/Journal/daily",
 	day_format = "%Y-%m-%d.md",
 	tmpl_daily = "~/Notes/templates/Daily.md",
+	first_dow = "su", -- Default first day of the week is Monday
 	habits = {
 		{
 			label = "French",
@@ -253,6 +254,7 @@ M.setup = function(opts)
 	opts = opts or {}
 	M.config = vim.tbl_deep_extend("force", M.config, opts)
 	M.charting.setup(M.config.charting)
+	M.utils.setup(M.config)
 	M.calendar.setup(M.config.calendar)
 	M.journal.setup(M.config)
 	add_user_command()
