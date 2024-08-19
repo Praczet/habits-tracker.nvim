@@ -27,6 +27,7 @@ M.config = {
 		bar = {
 			show_legend = true,
 			show_oxy = true,
+			max_rows = 10,
 			oxy = {
 				cross = "┼",
 				ver = "┊",
@@ -251,28 +252,43 @@ end
 
 ---Gets lines for bar chart
 ---@param value_name string Value to read from YAML fronter
----@param bar_type string Horizontal or Vertical
----@param title string Chart title (optional)
----@param start_date string|osdate Start Date (optional) in format YYYY-MM-DD
----@param end_date string|osdate End Date (optional) in format YYYY-MM-DD
----@return table string[] Lines to be rendered
-function M.get_bar_lines(value_name, bar_type, title, start_date, end_date)
+---@param opts {} Options:
+---       - **bar_type** string
+---       - **title** string Chart title (optional)
+---       - **start_date** string|osdate Start Date (optional) in format YYYY-MM-DD
+---       - **end_date** string|osdate End Date (optional) in format YYYY-MM-DD
+---table string[] Lines to be rendered
+function M.get_bar_lines(value_name, opts)
+	if not opts then
+		opts = {}
+	end
 	local lines = {}
 	if not value_name or value_name == "" then
 		vim.notify("Parameters values is empty", vim.log.levels.WARN)
 		return {}
 	end
-	if not bar_type or bar_type == "" then
-		bar_type = "vertical"
+	if not opts.bar_type or opts.bar_type == "" then
+		opts.bar_type = "vertical"
 	end
-	if start_date == nil then
-		start_date, end_date = M.utils.get_current_week()
+	if opts.start_date == nil then
+		opts.start_date, opts.end_date = M.utils.get_current_week()
 	end
-	if title == nil or title == "" then
-		title = value_name .. ": %s - %s"
+	if opts.title == nil or opts.title == "" then
+		opts.title = value_name .. ": %s - %s"
 	end
-	local data = M.journal.get_values(start_date, end_date, value_name)
-	lines = M.charting.get_bar_lines(start_date, end_date, data, value_name, title, bar_type)
+	if opts.max_rows == nil then
+		opts.max_rows = 6
+	end
+	local data = M.journal.get_values(opts.start_date, opts.end_date, value_name)
+	lines = M.charting.get_bar_lines(
+		opts.start_date,
+		opts.end_date,
+		data,
+		value_name,
+		opts.title,
+		opts.bar_type,
+		opts.max_rows
+	)
 	return lines
 end
 -- Any initialization code

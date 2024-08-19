@@ -3,6 +3,7 @@ local M = {}
 M.config = {
 	show_legend = true,
 	show_oxy = true,
+	max_rows = 6,
 	oxy = {
 		cross = "┼",
 		ver = "┊",
@@ -371,11 +372,11 @@ function M.horizontal(chart_data, add_to_buffer)
 	end
 end
 
-function M.get_chart_data(start_date, end_date, data, y_label, title)
+function M.get_chart_data(start_date, end_date, data, y_label, title, max_rows)
 	return {
 		y_label = y_label,
 		x_label = "",
-		max_rows = 10,
+		max_rows = max_rows or M.config.max_rows or 10,
 		add_aprox = true,
 		x_min = start_date,
 		x_max = end_date,

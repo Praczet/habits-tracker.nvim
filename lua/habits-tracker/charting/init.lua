@@ -19,12 +19,11 @@ function M.render_bar_vertical(start_date, end_date, data, y_label, title)
 	M.bar.vertical(chart_data)
 end
 
-function M.get_bar_lines(start_date, end_date, data, y_label, title, bar_type)
+function M.get_bar_lines(start_date, end_date, data, y_label, title, bar_type, max_rows)
+	local chart_data = M.bar.get_chart_data(start_date, end_date, data, y_label, title, max_rows)
 	if bar_type == "vertical" then
-		local chart_data = M.bar.get_chart_data(start_date, end_date, data, y_label, title)
 		return M.bar.vertical(chart_data, false)
 	else
-		local chart_data = M.bar.get_chart_data(start_date, end_date, data, y_label, title)
 		return M.bar.horizontal(chart_data, false)
 	end
 end
