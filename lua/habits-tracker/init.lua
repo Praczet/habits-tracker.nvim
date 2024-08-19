@@ -23,7 +23,16 @@ M.config = {
 		},
 	},
 	charting = {
-		line = {},
+		line = {
+			show_legend = true,
+			show_oxy = true,
+			max_rows = 10,
+			oxy = {
+				cross = "┼",
+				ver = "┊",
+				hor = "┈",
+			},
+		},
 		bar = {
 			show_legend = true,
 			show_oxy = true,
@@ -216,6 +225,26 @@ local function bar_command(args, bar_type)
 	local data = M.journal.get_values(start_date, end_date, params.value)
 	M.charting.render_bar(start_date, end_date, data, params.value, params.title, bar_type)
 end
+
+local function linechart_command(args, bar_type)
+	-- Parse and validate arguments
+	local params = parse_args_bar(args)
+	if not params then
+		return
+	end
+	local start_date, end_date = parse_params_date(params.date)
+
+	-- Example logic
+	if not params.value or params.value == "" then
+		vim.notify("Value to load is empty", vim.log.levels.WARN)
+		return
+	end
+	if not params.tilte or params.tilte == "" then
+		params.tilte = params.value .. ": %s - %s"
+	end
+	local data = M.journal.get_values(start_date, end_date, params.value)
+	M.charting.render_linechart(start_date, end_date, data, params.value, params.title)
+end
 -- Command implementation
 local function journal_command(opts)
 	local date, replacements = parse_params_journal(opts)
@@ -247,6 +276,10 @@ local function add_user_command()
 
 	vim.api.nvim_create_user_command("TrackBarVertical", function(opts)
 		bar_command(opts.fargs, "vertical")
+	end, { nargs = "*" })
+
+	vim.api.nvim_create_user_command("TrackLineChart", function(opts)
+		linechart_command(opts.fargs)
 	end, { nargs = "*" })
 end
 

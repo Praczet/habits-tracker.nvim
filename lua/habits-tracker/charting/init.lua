@@ -19,6 +19,11 @@ function M.render_bar_vertical(start_date, end_date, data, y_label, title)
 	M.bar.vertical(chart_data)
 end
 
+function M.render_linechart(start_date, end_date, data, y_label, title)
+	local chart_data = M.line.get_chart_data(start_date, end_date, data, y_label, title)
+	M.line.chartline(chart_data)
+end
+
 function M.get_bar_lines(start_date, end_date, data, y_label, title, bar_type, max_rows)
 	local chart_data = M.bar.get_chart_data(start_date, end_date, data, y_label, title, max_rows)
 	if bar_type == "vertical" then
@@ -54,7 +59,6 @@ function M.test(start_date, end_date, data, y_label, title)
 	-- 	title = string.format("Weight (kg) %s - %s", start_date, end_date),
 	-- 	data = data,
 	-- }
-	M.render_bar_vertical(start_date, end_date, data, y_label, title)
-	M.render_bar_horizontal(start_date, end_date, data, y_label, title)
+	M.render_linechart(start_date, end_date, data, y_label, title)
 end
 return M
