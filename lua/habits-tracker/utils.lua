@@ -162,6 +162,125 @@ function M.normalize_folder_path(folder_path)
 	return folder_path:gsub("/$", "")
 end
 
+-- Utility function to parse a string into a Lua table if it is a list
+function M.parse_list(value)
+	value = value:match("^%s*(.-)%s*$")
+	-- Check if the value is a list (starts with "[" and ends with "]")
+	if value:match("^%[.*%]$") then
+		-- Remove the square brackets and split the contents by commas
+		local list_content = value:sub(2, -2) -- Remove the square brackets
+		local list = {}
+		for item in list_content:gmatch("[^,%s]+") do
+			-- Trim spaces and add to the list
+			table.insert(list, item:match("^%s*(.-)%s*$"))
+		end
+		return list
+	else
+		return value -- Return the original value if it's not a list
+	end
+end
+
+function M.parse_curly_content(content)
+	local parameters = {}
+	local param = ""
+	local in_quotes = false
+	local quote_char = nil
+
+	-- Handle cases where only {Habits} or {Track} is present without additional parameters
+	if content:match("^%s*(Habits)%s*$") then
+		parameters["Habits"] = {}
+		return parameters
+	elseif content:match("^%s*(Track)%s*$") then
+		parameters["Track"] = ""
+		return parameters
+	end
+
+	-- Regular parsing logic for key-value pairs
+	for i = 1, #content do
+		local char = content:sub(i, i)
+
+		if char == '"' or char == "'" then
+			if in_quotes and quote_char == char then
+				in_quotes = false
+				quote_char = nil
+			elseif not in_quotes then
+				in_quotes = true
+				quote_char = char
+			end
+		end
+
+		if char == ";" and not in_quotes then
+			local key, value = param:match("^%s*(.-)%s*:%s*(.-)%s*$")
+			if key and value then
+				-- Special handling for the "Habits" key
+				if key == "Habits" then
+					parameters[key] = M.parse_list(value)
+				else
+					parameters[key] = value
+				end
+			end
+			param = ""
+		else
+			param = param .. char
+		end
+	end
+
+	-- Process the last parameter
+	if param ~= "" then
+		local key, value = param:match("^%s*(.-)%s*:%s*(.-)%s*$")
+		if key and value then
+			-- Special handling for the "Habits" key
+			if key == "Habits" then
+				parameters[key] = M.parse_list(value)
+			else
+				parameters[key] = value
+			end
+		end
+	end
+
+	return parameters
+end
+
+function M.find_fenced_blocks(bufnr)
+	local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+	local result = {}
+
+	local i = 1
+	while i <= #lines do
+		local line = lines[i]
+		local start_match = line:match("^```" .. (M.config.fenced_lang or "ts") .. "%s*{(Track:.-)}")
+		local habits_match = line:match("^```" .. (M.config.fenced_lang or "ts") .. "%s*{(Habits:.-)}")
+		local simple_habits_match = line:match("^```" .. (M.config.fenced_lang or "ts") .. "%s*{(Habits)}$")
+		local simple_track_match = line:match("^```" .. (M.config.fenced_lang or "ts") .. "%s*{(Track)}$")
+
+		if start_match or habits_match or simple_habits_match or simple_track_match then
+			local block_type = start_match and "Track" or (habits_match or simple_habits_match) and "Habits" or "Track"
+			local param_string = start_match or habits_match or simple_habits_match or simple_track_match
+			local params = M.parse_curly_content(param_string)
+			local start_line = i
+
+			-- Find the end of the fenced block
+			while i <= #lines do
+				if lines[i]:match("^```") and i > start_line then
+					local end_line = i
+					table.insert(result, {
+						parameters = params,
+						start_line = start_line,
+						end_line = end_line,
+						block_type = block_type,
+						param_string = param_string,
+					})
+					break
+				end
+				i = i + 1
+			end
+		end
+
+		i = i + 1
+	end
+
+	return result
+end
 function M.setup(config)
 	M.config = vim.tbl_deep_extend("force", M.config, config or {})
 	M.debug = M.config.debug

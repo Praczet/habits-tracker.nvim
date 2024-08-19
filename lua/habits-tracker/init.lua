@@ -4,7 +4,8 @@ M.config = {
 	journals = "~/Notes/Journal/daily",
 	day_format = "%Y-%m-%d.md",
 	tmpl_daily = "~/Notes/templates/Daily.md",
-	first_dow = "su", -- Default first day of the week is Monday
+	first_dow = "mo", -- Default first day of the week is Monday
+	fenced_lang = "ts",
 	habits = {
 		{
 			label = "French",
@@ -324,6 +325,7 @@ function M.get_bar_lines(value_name, opts)
 	)
 	return lines
 end
+
 -- Any initialization code
 function M.setup(opts)
 	-- Set up each module with user-provided options or defaults
@@ -337,16 +339,19 @@ function M.setup(opts)
 end
 
 function M.test()
-	vim.notify("Test triggered")
-	-- M.charting.test()
-	-- M.calendar.test()
-	-- M.journal.test(M.utils.get_current_week())
-	local start_date = "2024-05-06"
-	local end_date = "2024-05-23"
-	local y_label = "Weight"
-	local title = "Weight (kg): %s - %s"
-	local data = M.journal.test(start_date, end_date, y_label)
-	M.charting.test(start_date, end_date, data, y_label, title)
+	-- vim.notify("Test triggered")
+	-- -- M.charting.test()
+	-- -- M.calendar.test()
+	-- -- M.journal.test(M.utils.get_current_week())
+	-- local start_date = "2024-05-06"
+	-- local end_date = "2024-05-23"
+	-- local y_label = "Weight"
+	-- local title = "Weight (kg): %s - %s"
+	-- local data = M.journal.test(start_date, end_date, y_label)
+	-- M.charting.test(start_date, end_date, data, y_label, title)
+	local bufnr = vim.api.nvim_get_current_buf()
+	local fenced_blocks = M.utils.find_fenced_blocks(bufnr)
+	print(vim.inspect(fenced_blocks))
 end
 
 return M

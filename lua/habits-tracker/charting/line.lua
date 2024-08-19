@@ -289,7 +289,7 @@ function M.add_lines_to_buffer(lines)
 	if M.utils.is_cursor_between_fences() then
 		vim.api.nvim_buf_set_lines(0, row, row, true, lines)
 	else
-		table.insert(lines, 1, "```ts")
+		table.insert(lines, 1, "```" .. (M.utils.config.fenced_lang or "ts"))
 		table.insert(lines, "```")
 		vim.api.nvim_buf_set_lines(0, row, row, true, lines)
 	end
