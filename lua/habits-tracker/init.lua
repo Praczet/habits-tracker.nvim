@@ -284,6 +284,27 @@ local function add_user_command()
 	end, { nargs = "*" })
 end
 
+---Adds special highlight for the habit file, and syntax for fenced block
+local function add_syntax()
+	-- Create an autocommand within the augroup
+	vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
+		group = "filetypedetect",
+		pattern = "*.habt",
+		command = [[
+      syntax include @habt syntax/habt.vim
+      setlocal filetype=habt
+      ]],
+	})
+	vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
+		pattern = "*.md",
+		callback = function()
+			vim.cmd([[
+                syntax include @habt syntax/habt.vim
+                syntax region myFencedHTBlock start="```habt" end="```" contains=@habt contained
+            ]])
+		end,
+	})
+end
 ---Gets lines for bar chart
 ---@param value_name string Value to read from YAML fronter
 ---@param opts {} Options:
@@ -336,6 +357,7 @@ function M.setup(opts)
 	M.calendar.setup(M.config.calendar)
 	M.journal.setup(M.config)
 	add_user_command()
+	-- add_syntax()
 end
 
 function M.test()
@@ -351,7 +373,7 @@ function M.test()
 	-- M.charting.test(start_date, end_date, data, y_label, title)
 	local bufnr = vim.api.nvim_get_current_buf()
 	local fenced_blocks = M.utils.find_fenced_blocks(bufnr)
-	print(vim.inspect(fenced_blocks))
+	-- print(vim.inspect(fenced_blocks))
 end
 
 return M

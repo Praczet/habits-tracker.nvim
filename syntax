@@ -1,0 +1,22 @@
+
+" Define custom syntax highlighting for your ht filetype
+syntax match htNumber "\v\d+(\.\d+)?"
+syntax match htDate "\v\d{4}-\d{2}-\d{2}"
+syntax match htTitle "Title:.*$"
+syntax match htText "Weight:.*$"
+syntax match htOX "[┊┈┼]"
+syntax match htChar "[█]"
+" syntax match htWord "\v\w+"  " For general word matching
+syntax match htCurlyBrackets "\v```habt.*" " Match curly brackets in ```habt blocks
+" OR
+" syntax match htWord "\v[a-zA-Z]+"  " For alphabetic word matching only
+
+" Apply different colors
+" highlight link htNumber Number
+highlight htNumber guifg=#ff5f87
+highlight link htDate String
+highlight link htTitle Title
+highlight link htText Comment
+highlight link htChar Special
+highlight link htWord Identifier
+highlight link htCurlyBrackets Comment" guifg=#ff5f87 guibg=#1e1e1e ctermfg=203 ctermbg=236
