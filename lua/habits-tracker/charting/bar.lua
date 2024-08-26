@@ -230,7 +230,7 @@ function M.vertical_get_lines(bars, max_rows, show_legend, max_height_value, tit
 	-- Fill the display table by transposing the bar chart
 	for _, bar in ipairs(bars) do
 		for i = 1, max_rows do
-			if i <= max_rows - bar.height then
+			if i <= (max_rows - bar.height) or bar.type == "empty" then
 				display[i] = display[i] .. M.utils.align_center(pad .. " " .. pad, x_label_value_len) -- Empty space for bars that don't reach this row
 			else
 				local ch_bar = M.utils.align_center(pad .. "█" .. pad, x_label_value_len)
