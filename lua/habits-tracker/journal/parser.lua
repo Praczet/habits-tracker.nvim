@@ -146,9 +146,123 @@ local function get_value_form_files(files, value_name, nilaszero)
 	end
 	return values
 end
+-- Function to parse a date string in the format "YYYY-MM-DD"
+local function parse_date(date_str)
+	local year, month, day = date_str:match("(%d+)-(%d+)-(%d+)")
+	return os.time({ year = year, month = month, day = day })
+end
+
+-- Function to calculate the start of the week based on the configured first day
+local function get_start_of_week(date, start_day)
+	local date_table = os.date("*t", date)
+	local day_of_week = date_table.wday - 1 -- os.date returns 1 (Sunday) to 7 (Saturday)
+	local diff = (day_of_week - start_day) % 7
+	return os.time({
+		year = date_table.year,
+		month = date_table.month,
+		day = date_table.day - diff,
+		hour = 0,
+		min = 0,
+		sec = 0,
+	})
+	-- print("date", date, "start_day", start_day)
+	-- local day_of_week = date:weekday() -- Returns 1 (Sunday) to 7 (Saturday)
+	-- local adjusted_day_of_week = (day_of_week - 1) % 7 -- Normalize to 0 (Sunday) to 6 (Saturday)
+	-- local diff = (adjusted_day_of_week - start_day) % 7
+	-- return date - diff * 24 * 60 * 60 -- Subtract the difference in days to get the start of the week
+end
+
+local function get_week_label(date, start_day)
+	local start_of_week = get_start_of_week(date, start_day)
+	return os.date("%Y-W%V", start_of_week) -- Week label in the format "2024-W01"
+end
+
+local function get_month_label(date)
+	return os.date("%Y-%m", date)
+end
+
+local function get_quarter_label(date)
+	local month = tonumber(os.date("%m", date))
+	local quarter = math.ceil(month / 3)
+	return string.format("Q%d", quarter)
+end
+
+local function get_year_label(date)
+	return os.date("%Y", date)
+end
 
 -- M Functions
 
+-- Function to aggregate values based on the interval and configuration
+function M.aggregate_values_by_interval(data, interval, round, start_day)
+	local aggregated_data = {}
+	local current_label = nil
+	local sum, count, is_approx = 0, 0, false
+
+	for i, entry in ipairs(data) do
+		local date = parse_date(entry.x)
+
+		-- Determine the current label based on the interval
+		local label
+		if interval == "day" then
+			label = os.date("%Y-%m-%d", date)
+		elseif interval == "week" then
+			label = get_week_label(date, start_day)
+		elseif interval == "month" then
+			label = get_month_label(date)
+		elseif interval == "quarter" then
+			label = get_quarter_label(date)
+		elseif interval == "year" then
+			label = get_year_label(date)
+		end
+
+		-- Aggregate data if it's the same label, otherwise store and reset
+		if current_label == label then
+			sum = sum + entry.value
+			count = count + 1
+			if entry.type ~= "exact" then
+				is_approx = true
+			end
+		else
+			if current_label then
+				local avg_value = sum / count
+				if round ~= nil then
+					avg_value = tonumber(string.format("%." .. round .. "f", avg_value)) or math.floor(avg_value)
+				else
+					avg_value = math.floor(avg_value)
+				end
+
+				table.insert(aggregated_data, {
+					x = current_label,
+					value = avg_value,
+					type = is_approx and "approx" or "exact",
+				})
+			end
+
+			-- Reset for the next label
+			current_label = label
+			sum, count, is_approx = entry.value, 1, entry.type ~= "exact"
+		end
+	end
+
+	-- Store the last aggregated value
+	if current_label then
+		local avg_value = sum / count
+		if round ~= nil then
+			avg_value = tonumber(string.format("%." .. round .. "f", avg_value))
+		else
+			avg_value = math.floor(avg_value)
+		end
+
+		table.insert(aggregated_data, {
+			x = current_label,
+			value = avg_value,
+			type = is_approx and "approx" or "exact",
+		})
+	end
+
+	return aggregated_data
+end
 function M.parse_yaml_front_matter(content)
 	if lyaml_exists then
 		local front_matter = content:match("^%-%-%-(.-)%-%-%-")

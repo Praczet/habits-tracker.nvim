@@ -72,7 +72,9 @@ function M.get_values(min, max, value_name)
 end
 
 function M.test(min, max, value)
-	return M.parser.test(min, max, value)
+	local data = M.parser.test(min, max, value)
+	print(vim.inspect(data))
+	return M.parser.aggregate_values_by_interval(data, "month", 2, M.utils.get_first_day_of_week())
 end
 
 return M

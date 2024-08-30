@@ -101,6 +101,7 @@ local function parse_params_journal(args)
 
 	return date, replacements
 end
+
 local function parse_params_date(date)
 	local start_date, end_date
 	if date == "week" then
@@ -371,9 +372,17 @@ function M.test()
 	-- local title = "Weight (kg): %s - %s"
 	-- local data = M.journal.test(start_date, end_date, y_label)
 	-- M.charting.test(start_date, end_date, data, y_label, title)
-	local bufnr = vim.api.nvim_get_current_buf()
-	local fenced_blocks = M.utils.find_fenced_blocks(bufnr)
+	-- local bufnr = vim.api.nvim_get_current_buf()
+	-- local fenced_blocks = M.utils.find_fenced_blocks(bufnr)
 	-- print(vim.inspect(fenced_blocks))
+
+	local start_date = "2024-01-01"
+	local end_date = "2024-08-31"
+	local y_label = "Mood"
+	local title = "Mood (0-5): %s - %s"
+	local data = M.journal.test(start_date, end_date, y_label)
+	print(vim.inspect(data))
+	M.charting.test(start_date, end_date, data, y_label, title)
 end
 
 return M

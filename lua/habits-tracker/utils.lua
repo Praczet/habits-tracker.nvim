@@ -12,6 +12,79 @@ local day_map = {
 	fr = 5, -- Friday
 	sa = 6, -- Saturday
 }
+
+function M.get_first_day_of_week()
+	return day_map[M.config.first_dow:sub(1, 2):lower()]
+end
+--
+-- Function to parse "YYYY-WXX" format and return the start and end dates of the week
+function M.get_week_range(week_string, start_day, as_string)
+	local year, week_number = week_string:match("(%d+)-W(%d+)")
+	year = tonumber(year)
+	week_number = tonumber(week_number)
+
+	if year == nil or week_number == nil then
+		return nil
+	end
+
+	-- Get January 1st of the year
+	local jan1 = os.time({ year = year, month = 1, day = 1 })
+
+	-- Find the first start_day of the year
+	local jan1_wday = tonumber(os.date("%w", jan1)) -- 0 = Sunday, 6 = Saturday
+	local start_day_wday = day_map[start_day]
+
+	local days_to_first_start_day = (start_day_wday - jan1_wday + 7) % 7
+	local first_start_day = jan1 + days_to_first_start_day * 24 * 60 * 60
+
+	-- Calculate the start of the given week
+	local start_of_week = first_start_day + (week_number - 1) * 7 * 24 * 60 * 60
+
+	-- Calculate the end of the week (6 days after the start)
+	local end_of_week = start_of_week + 6 * 24 * 60 * 60
+
+	-- Convert to "YYYY-MM-DD" format if needed
+	local from_date = as_string and os.date("%Y-%m-%d", start_of_week) or start_of_week
+	local to_date = as_string and os.date("%Y-%m-%d", end_of_week) or end_of_week
+
+	return {
+		from = from_date,
+		startDay = start_day,
+		to = to_date,
+	}
+end
+
+-- Function to parse "YYYY-QX" format and return the start and end dates of the quarter
+function M.get_quarter_range(quarter_string, as_string)
+	local year, quarter = quarter_string:match("(%d+)-Q(%d+)")
+	year = tonumber(year)
+	quarter = tonumber(quarter)
+	if year == nil or quarter == nil then
+		return nil
+	end
+
+	-- Define the start and end months for each quarter
+	local quarter_start_months = { 1, 4, 7, 10 }
+	local quarter_end_months = { 3, 6, 9, 12 }
+
+	local start_month = quarter_start_months[quarter]
+	local end_month = quarter_end_months[quarter]
+
+	-- Get the start and end dates of the quarter
+	local start_of_quarter = os.time({ year = year, month = start_month, day = 1, hour = 0, min = 0, sec = 0 })
+	local end_of_quarter = os.time({ year = year, month = end_month + 1, day = 1, hour = 0, min = 0, sec = 0 }) - 1
+
+	-- Convert to "YYYY-MM-DD" format if needed
+	local from_date = as_string and os.date("%Y-%m-%d", start_of_quarter) or start_of_quarter
+	local to_date = as_string and os.date("%Y-%m-%d", end_of_quarter) or end_of_quarter
+
+	return {
+		from = from_date,
+		to = to_date,
+		quarter = quarter_string,
+	}
+end
+
 function M.get_current_week()
 	-- Get today's date information
 	local today = os.time()
@@ -39,6 +112,7 @@ function M.get_current_week()
 
 	return min_day, max_day
 end
+
 function M.log_message(module_name, message)
 	if not M.debug then
 		return
@@ -281,6 +355,7 @@ function M.find_fenced_blocks(bufnr)
 
 	return result
 end
+
 function M.setup(config)
 	M.config = vim.tbl_deep_extend("force", M.config, config or {})
 	M.debug = M.config.debug
